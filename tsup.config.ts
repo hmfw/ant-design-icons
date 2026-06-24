@@ -3,6 +3,7 @@ import { defineConfig } from 'tsup'
 export default defineConfig({
   // 编译所有源文件，保留目录结构（bundle: false）
   // 图标组件每个单独编译，tree-shaking 友好
+  // 构建后由 fix-extensions.js 补全 .js 扩展名
   entry: [
     'index.ts',
     'metadata.ts',

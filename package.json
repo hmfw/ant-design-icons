@@ -44,6 +44,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
+    "postbuild": "node scripts/fix-extensions.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "gen:icons": "tsx scripts/generate-icons.ts",
