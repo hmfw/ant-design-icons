@@ -1,6 +1,6 @@
 {
   "name": "@hmfw/icons",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "基于 Ant Design 的 Vue3 图标组件库 —— 681 个高质量 SVG 图标",
   "keywords": [
     "vue3",
