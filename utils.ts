@@ -129,11 +129,22 @@ export function getAllCategories(): string[] {
   })
 }
 
+let _allIconsCache: IconSearchResult[] | null = null
+
 /**
- * 获取所有图标及其元数据
+ * 清除图标缓存（仅在测试或动态加载场景使用）
+ */
+export function clearIconCache(): void {
+  _allIconsCache = null
+}
+
+/**
+ * 获取所有图标及其元数据（结果会被缓存，重复调用不重建）
  * @returns 所有图标的完整信息
  */
 export function getAllIcons(): IconSearchResult[] {
+  if (_allIconsCache) return _allIconsCache
+
   const results: IconSearchResult[] = []
 
   // 基于 metadata 遍历（metadata 的 key 与 SVG 文件名一致，可准确转换为组件名）
@@ -152,5 +163,6 @@ export function getAllIcons(): IconSearchResult[] {
     }
   })
 
-  return results.sort((a, b) => a.name.localeCompare(b.name))
+  _allIconsCache = results.sort((a, b) => a.name.localeCompare(b.name))
+  return _allIconsCache
 }

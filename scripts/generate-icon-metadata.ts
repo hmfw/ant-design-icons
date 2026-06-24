@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import { writeFileSync, readdirSync } from 'fs'
+import { writeFileSync, readdirSync, readFileSync, existsSync } from 'fs'
 import { join, basename } from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+import { createHash } from 'crypto'
 import prettier from 'prettier'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -10,6 +11,7 @@ const __dirname = dirname(__filename)
 
 const SVG_DIR = join(__dirname, '../svg')
 const OUTPUT_FILE = join(__dirname, '../metadata.ts')
+const CACHE_FILE = join(__dirname, '../icons', '.cache-svg-hash')
 
 // 中文分类规则（基于图标名称关键词）
 // 优先级：从上到下，先匹配的分类生效
@@ -587,6 +589,16 @@ async function main() {
     .sort()
 
   console.log(`📦 找到 ${svgFiles.length} 个 SVG 文件`)
+
+  // 基于 SVG 内容哈希 + 源脚本哈希 快速跳过（与 generate-icons 共享缓存键）
+  const svgHash = createHash('sha256')
+    .update(svgFiles.map((f) => readFileSync(join(SVG_DIR, f), 'utf8')).join('\n'))
+    .digest('hex')
+
+  if (existsSync(CACHE_FILE) && readFileSync(CACHE_FILE, 'utf8') === svgHash) {
+    console.log('✅ SVG files unchanged, skipping metadata generation')
+    return
+  }
 
   const metadata: Record<string, { keywords: string[]; category: string; tags?: string[] }> = {}
 

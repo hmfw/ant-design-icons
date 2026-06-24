@@ -9,7 +9,7 @@ export { iconMetadata } from './metadata'
 export type { IconMetadata } from './metadata'
 
 // 图标搜索和分类工具
-export { searchIcons, getIconsByCategory, getAllCategories, getAllIcons } from './utils'
+export { searchIcons, getIconsByCategory, getAllCategories, getAllIcons, clearIconCache } from './utils'
 export type { IconSearchResult } from './utils'
 
 // 类型定义

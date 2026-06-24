@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync } from 'fs'
+import { readFileSync, writeFileSync, readdirSync, mkdirSync, rmSync, existsSync } from 'fs'
 import { join, basename } from 'path'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
+import { createHash } from 'crypto'
 import prettier from 'prettier'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -12,6 +13,7 @@ const __dirname = dirname(__filename)
 const SVG_DIR = join(__dirname, '../svg')
 const OUTPUT_DIR = join(__dirname, '../icons')
 const INDEX_FILE = join(OUTPUT_DIR, 'index.ts')
+const CACHE_FILE = join(OUTPUT_DIR, '.cache-svg-hash')
 
 // 将 kebab-case 转换为 PascalCase
 function toPascalCase(str: string): string {
@@ -101,6 +103,16 @@ async function main() {
 
   console.log(`📦 Found ${svgFiles.length} SVG files`)
 
+  // 基于 SVG 文件内容计算哈希，未变更则跳过生成
+  const svgHash = createHash('sha256')
+    .update(svgFiles.map((f) => readFileSync(join(SVG_DIR, f), 'utf8')).join('\n'))
+    .digest('hex')
+
+  if (existsSync(CACHE_FILE) && readFileSync(CACHE_FILE, 'utf8') === svgHash) {
+    console.log('✅ SVG files unchanged, skipping icon generation')
+    return
+  }
+
   // 清空并重建输出目录
   rmSync(OUTPUT_DIR, { recursive: true, force: true })
   mkdirSync(OUTPUT_DIR, { recursive: true })
@@ -139,6 +151,9 @@ ${componentNames.map((name) => `export { ${name} } from './${name}'`).join('\n')
 
   const formattedIndex = await prettier.format(indexContent, { ...prettierConfig, parser: 'typescript' })
   writeFileSync(INDEX_FILE, formattedIndex, 'utf8')
+
+  // 写入缓存哈希
+  writeFileSync(CACHE_FILE, svgHash, 'utf8')
 
   // console.log(`\n✅ Generated ${componentNames.length} icon files in ${OUTPUT_DIR}`)
   console.log(`✅ Generated ${INDEX_FILE}`)

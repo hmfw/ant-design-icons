@@ -27,12 +27,15 @@
     "registry": "https://registry.npmjs.org"
   },
   "type": "module",
-  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./icons/*": {
+      "types": "./dist/icons/*.d.ts",
+      "import": "./dist/icons/*.js"
     },
     "./package.json": "./package.json"
   },
@@ -44,7 +47,7 @@
   "sideEffects": false,
   "scripts": {
     "build": "tsup",
-    "postbuild": "node scripts/fix-extensions.js",
+    "postbuild": "node scripts/fix-extensions.js && tsc --emitDeclarationOnly",
     "test": "vitest run",
     "test:watch": "vitest",
     "gen:icons": "tsx scripts/generate-icons.ts",
