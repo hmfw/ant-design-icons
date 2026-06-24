@@ -1,0 +1,70 @@
+{
+  "name": "@hmfw/icons",
+  "version": "1.0.0",
+  "description": "基于 Ant Design 的 Vue3 图标组件库 —— 681 个高质量 SVG 图标",
+  "keywords": [
+    "vue3",
+    "ant-design",
+    "icons",
+    "svg-icons",
+    "icon-library",
+    "typescript"
+  ],
+  "author": {
+    "name": "hmfw",
+    "url": "https://github.com/hmfw"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hmfw/ant-design-icons.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hmfw/ant-design-icons/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "gen:icons": "tsx scripts/generate-icons.ts",
+    "gen:icon-metadata": "tsx scripts/generate-icon-metadata.ts",
+    "prebuild": "pnpm gen:icons && pnpm gen:icon-metadata",
+    "prepublishOnly": "pnpm test && pnpm build",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vue": ">=3.3.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.8.4",
+    "tsup": "^8.0.0",
+    "tsx": "^4.22.3",
+    "typescript": "^5.4.0",
+    "vitest": "^1.4.0",
+    "vue": "^3.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=10.0.0"
+  }
+}
