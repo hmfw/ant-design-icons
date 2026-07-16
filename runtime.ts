@@ -70,7 +70,10 @@ export function createIconComponent(name: string, viewBox: string, paths: IconPa
     )
   }
 
-  Icon.props = ['spin', 'rotate']
+  Icon.props = {
+    spin: Boolean,
+    rotate: Number,
+  }
   Icon.inheritAttrs = false
   Icon.displayName = name
 

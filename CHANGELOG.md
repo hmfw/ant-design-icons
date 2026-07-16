@@ -2,6 +2,12 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.1.2] - 2026-07-16
+
+### 修复
+
+- 修复 `spin` 属性在 Vue 模板中使用布尔语法（如 `<LoadingOutlined spin />`）时不生效的问题。原因：props 定义使用了数组形式，导致 Vue 不做类型转换。现已改为对象形式定义 `{ spin: Boolean, rotate: Number }`，Vue 会自动将 `spin` 转换为 `true`。
+
 ## [1.1.1] - 2026-07-16
 
 ### 变更
