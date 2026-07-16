@@ -9,6 +9,7 @@
 
 - 🎨 **681 个图标** —— 完整覆盖 Ant Design 图标集
 - 🌲 **Tree Shaking** —— 每个图标独立文件，按需引入，零冗余
+- 🔄 **旋转动画** —— 内置 `spin`（持续旋转）与 `rotate`（指定角度）属性
 - 🔍 **内置搜索** —— 支持中英文关键词搜索、按分类筛选
 - 📦 **双模式构建** —— ESM（支持 tree-shaking）+ UMD（CDN 直接引入）
 - 💪 **TypeScript** —— 完整类型定义，每个图标组件独立 `.d.ts`
@@ -34,9 +35,35 @@ import { HomeOutlined, BellFilled, LoadingOutlined } from '@hmfw/icons'
 <template>
   <HomeOutlined />
   <BellFilled style="color: #1677ff; font-size: 24px" />
-  <LoadingOutlined class="spin" />
+  <LoadingOutlined spin />
 </template>
 ```
+
+每个图标渲染为 `<span class="anticon anticon-{name}" role="img"><svg>…</svg></span>`。
+外层 `span` 接收透传的 `class`、`style`、事件（如 `@click`）等属性，`svg` 固定 `1em` 尺寸并继承 `currentColor`。
+
+### 旋转：spin 与 rotate
+
+```vue
+<script setup>
+import { LoadingOutlined, ArrowUpOutlined } from '@hmfw/icons'
+</script>
+
+<template>
+  <!-- 持续旋转（loading 场景） -->
+  <LoadingOutlined spin />
+
+  <!-- 旋转指定角度：90、180、-90 … -->
+  <ArrowUpOutlined :rotate="90" />
+</template>
+```
+
+| 属性     | 类型      | 说明                                       |
+| -------- | --------- | ------------------------------------------ |
+| `spin`   | `boolean` | 为 `true` 时图标以 1s/圈匀速持续旋转       |
+| `rotate` | `number`  | 静态旋转角度（单位：度），如 `90`、`-90`   |
+
+> 旋转所需的 CSS（`.anticon` 基类与 `@keyframes`）在图标首次渲染时由 JS 自动注入，无需手动引入样式文件；SSR 环境下自动跳过注入。
 
 ### 搜索图标
 

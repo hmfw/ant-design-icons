@@ -45,9 +45,9 @@ function parseSvg(svgContent: string): { viewBox: string; paths: string[] } {
 
       if (fill && fill !== 'currentColor') {
         // 如果有特定的 fill 颜色，保留它
-        paths.push(`h('path', { d: '${d}', fill: '${fill}' })`)
+        paths.push(`{ d: '${d}', fill: '${fill}' }`)
       } else {
-        paths.push(`h('path', { d: '${d}' })`)
+        paths.push(`{ d: '${d}' }`)
       }
     }
   }
@@ -68,20 +68,13 @@ function generateIconComponent(
   const componentName = `${toPascalCase(baseName)}${suffix}`
   const pathsCode = paths.length > 0 ? paths.join(', ') : ''
 
-  const code = `import type { IconComponent } from '../types'
-import { h } from 'vue'
+  const code = `import { createIconComponent } from '../runtime'
+import type { IconComponent } from '../types'
 
 // 此文件由 scripts/generate-icons.ts 自动生成
 // 请勿手动编辑，运行 pnpm gen:icons 重新生成
 
-export const ${componentName}: IconComponent = () =>
-  h('svg', {
-    viewBox: '${viewBox}',
-    width: '1em',
-    height: '1em',
-    fill: 'currentColor',
-    focusable: false,
-  }, [${pathsCode}])
+export const ${componentName}: IconComponent = createIconComponent('${name}', '${viewBox}', [${pathsCode}])
 `
 
   return { componentName, code }

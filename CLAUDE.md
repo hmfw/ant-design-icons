@@ -25,14 +25,17 @@ Vue 3 图标组件库（`@hmfw/icons`）—— **681 个 Ant Design 图标，封
 
 **核心文件：**
 - `index.ts` — 公开入口：图标组件、元数据、工具函数、类型定义
-- `types.ts` — `IconComponent` 类型（Vue `FunctionalComponent<SVGAttributes>`）
+- `types.ts` — `IconProps`（`SVGAttributes` + `spin`/`rotate`）与 `IconComponent` 类型（Vue `FunctionalComponent<IconProps>`）
+- `runtime.ts` — `createIconComponent()` 工厂，被所有生成的图标文件调用；负责 span 包裹、spin/rotate 处理、CSS 懒注入
 - `metadata.ts` — 自动生成的扁平映射：图标名称 → `{ keywords, category, tags? }`
 - `utils.ts` — `searchIcons()`、`getIconsByCategory()`、`getAllCategories()`、`getAllIcons()`
 - `icons/` — 682 个自动生成的文件：681 个图标组件 + `index.ts` 桶导出
 
 **图标命名规则：** SVG 文件名使用 kebab-case（如 `bell-filled.svg`、`arrow-up.svg`）。生成器转换为 PascalCase 组件名：`-filled` 后缀 → `Filled` 结尾，其他 → `Outlined` 结尾。示例：`bell-filled.svg` → `BellFilled`，`arrow-up.svg` → `ArrowUpOutlined`，`home.svg` → `HomeOutlined`。
 
-**生成的图标模式：** 每个图标是 `FunctionalComponent<SVGAttributes>`，返回 Vue 的 `h('svg', {...})` 调用，包含源 SVG 的 `viewBox`，固定 `width: '1em'` / `height: '1em'`、`fill: 'currentColor'`、`focusable: false`。
+**生成的图标模式：** 每个图标文件仅一行 `export const XxxOutlined: IconComponent = createIconComponent(name, viewBox, paths)`，调用共享的 `runtime.ts` 工厂。渲染结构为 `<span role="img" class="anticon anticon-{name}"><svg>…</svg></span>`：span 接收透传属性（class/style/事件），svg 固定 `width/height: '1em'`、`fill: 'currentColor'`、`focusable: false`。支持 `spin`（加 `anticon-spin` 类持续旋转）和 `rotate`（内联 `transform: rotate(Ndeg)`）。旋转 CSS 在首次渲染时由 `runtime.ts` 懒注入 `<style>`（`typeof document` 守卫，SSR 安全，无构建期副作用）。
+
+> **注意**：生成的图标必须保留显式 `: IconComponent` 类型注解。省略它会让 tsup 的 DTS worker 在 681 个文件上重新推导返回类型导致 OOM。
 
 ## 重要约定
 

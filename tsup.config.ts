@@ -8,6 +8,7 @@ export default defineConfig([
       'metadata.ts',
       'utils.ts',
       'types.ts',
+      'runtime.ts',
       'icons/**/*.ts',
       '!**/*.test.ts',
       '!**/*.spec.ts',

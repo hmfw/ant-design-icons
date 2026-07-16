@@ -13,4 +13,4 @@ export { searchIcons, getIconsByCategory, getAllCategories, getAllIcons, clearIc
 export type { IconSearchResult } from './utils'
 
 // 类型定义
-export type { IconComponent } from './types'
+export type { IconComponent, IconProps } from './types'

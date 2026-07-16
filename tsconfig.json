@@ -16,11 +16,13 @@
     "isolatedModules": true,
     "outDir": "./dist",
     "rootDir": ".",
-    "types": []
+    "types": ["node"]
   },
   "include": [
     "icons/**/*.ts",
+    "scripts/*.ts",
     "types.ts",
+    "runtime.ts",
     "metadata.ts",
     "utils.ts",
     "index.ts"
