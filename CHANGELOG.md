@@ -2,6 +2,12 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.1.1] - 2026-07-16
+
+### 变更
+
+- `spin` 旋转动画由内层 `svg` 移至外层 `span`，`anticon-spin` 类现追加到 `<span>` 上，与 Ant Design 表现一致。
+
 ## [1.1.0] - 2026-07-16
 
 ### 新增

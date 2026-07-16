@@ -50,7 +50,7 @@ export function createIconComponent(name: string, viewBox: string, paths: IconPa
       {
         role: 'img',
         'aria-label': name,
-        class: `anticon anticon-${name}`,
+        class: `anticon anticon-${name}${spin ? ' anticon-spin' : ''}`,
         ...attrs,
       },
       [
@@ -62,7 +62,6 @@ export function createIconComponent(name: string, viewBox: string, paths: IconPa
             height: '1em',
             fill: 'currentColor',
             focusable: false,
-            class: spin ? 'anticon-spin' : undefined,
             style: svgStyle,
           },
           paths.map((p) => h('path', p)),
