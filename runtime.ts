@@ -1,4 +1,4 @@
-import { h } from 'vue'
+import { h, mergeProps } from 'vue'
 import type { IconComponent } from './types'
 
 /** 单个 path 的属性（至少含 d，可选 fill） */
@@ -45,14 +45,18 @@ export function createIconComponent(name: string, viewBox: string, paths: IconPa
     const svgStyle =
       typeof rotate === 'number' && rotate !== 0 ? { transform: `rotate(${rotate}deg)` } : undefined
 
+    // 用 mergeProps 而非对象展开：展开会让 attrs.class 直接覆盖内置 class，
+    // mergeProps 会把两者的 class/style 合并，其余同名属性仍以 attrs 优先
     return h(
       'span',
-      {
-        role: 'img',
-        'aria-label': name,
-        class: `anticon anticon-${name}${spin ? ' anticon-spin' : ''}`,
-        ...attrs,
-      },
+      mergeProps(
+        {
+          role: 'img',
+          'aria-label': name,
+          class: `anticon anticon-${name}${spin ? ' anticon-spin' : ''}`,
+        },
+        attrs,
+      ),
       [
         h(
           'svg',

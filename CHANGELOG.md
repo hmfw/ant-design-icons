@@ -2,6 +2,12 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.1.3] - 2026-08-21
+
+### 修复
+
+- 修复传入 `class` / `style` 时覆盖内置类名的问题。此前外层 `span` 用对象展开合并透传属性，`attrs.class` 会直接顶掉 `anticon anticon-{name}`，导致 `.anticon` 基础样式与 `anticon-spin` 失效。现改用 Vue 的 `mergeProps`，`class` / `style` 与内置值累加合并，其余同名属性仍以传入值优先。
+
 ## [1.1.2] - 2026-07-16
 
 ### 修复
