@@ -2,6 +2,12 @@
 
 本项目遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [1.1.4] - 2026-10-02
+
+### 修复
+
+- 修复类型声明 barrel（`dist/icons/index.d.ts`）的 re-export 路径在某些构建环境下被写成包自引用（裸包名 `@hmfw/icons/icons/XxxOutlined` 或 pnpm 虚拟存储绝对路径 `.pnpm/@hmfw+icons@.../node_modules/...`）的问题。此前在 pnpm workspace / 自链接下执行 tsc 声明生成时，内部相对再导出可能被解析成上述非相对路径，消费端据此解析到不存在的目录，导致所有具名导入（如 `DownOutlined`、`LockOutlined`、`PlusOutlined`）在类型检查 / IDE 报「没有导出的成员」（运行时 JS 不受影响）。现 `scripts/fix-extensions.js` 增加规范化处理，发布前统一把 dist 中指向本包自身的说明符改回相对路径，使声明产物与运行时 JS 一致，且不受构建环境影响。
+
 ## [1.1.3] - 2026-08-21
 
 ### 修复

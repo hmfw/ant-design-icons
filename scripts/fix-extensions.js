@@ -14,11 +14,40 @@
  */
 
 import { readdirSync, readFileSync, writeFileSync, statSync, existsSync, unlinkSync } from 'fs'
-import { resolve, dirname, join } from 'path'
+import { resolve, dirname, join, relative } from 'path'
 import { fileURLToPath } from 'url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const distDir = resolve(__dirname, '../dist')
+
+// 本包名（用于识别「自引用」说明符）
+const pkgName = JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf-8')).name
+const escaped = pkgName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+// 裸包名子路径：  @scope/pkg            → sub=''（包根）
+//                @scope/pkg/icons/X    → sub='icons/X'
+const bareSelfRe = new RegExp(`^${escaped}(?:/(.*))?$`)
+// 任意路径中的 node_modules 自引用（含 pnpm 虚拟存储绝对路径）：
+//   .../.pnpm/@scope+pkg@x_.../node_modules/@scope/pkg/icons/X → sub='icons/X'
+const nmSelfRe = new RegExp(`[\\\\/]node_modules[\\\\/]${escaped}[\\\\/](.+)$`)
+
+/**
+ * 若说明符指向本包自身，返回其规范化子路径（相对包根，去掉 dist/ 前缀与扩展名）；
+ * 否则返回 null。相对路径与第三方（如 vue）一律返回 null。
+ *
+ * 背景：在 pnpm workspace / 自链接环境执行 tsc 声明生成时，本包内部的相对
+ * 再导出可能被解析成包名或 .pnpm 绝对路径写进 .d.ts / .js，例如
+ *   export { DownOutlined } from "@hmfw/icons/icons/DownOutlined"
+ * 消费端据此解析到不存在的目录，具名导入报「没有导出的成员」。
+ * 本函数把这类自引用识别出来，交由下方统一改回相对路径。
+ */
+function selfRefSub(spec) {
+  if (spec.startsWith('.')) return null // 相对路径不是自引用场景
+  let m = spec.match(bareSelfRe)
+  if (m) return m[1] ?? '' // 子路径，可能为空（包根）
+  m = spec.match(nmSelfRe)
+  if (m) return m[1].replace(/^dist\//, '').replace(/\.(js|mjs|d\.ts)$/, '')
+  return null
+}
 
 // 收集 dist 下所有 .js / .d.ts（跳过 sourcemap 与 UMD）
 function collect(dir, out = []) {
@@ -55,16 +84,29 @@ function extsFor(file) {
 }
 
 let patched = 0
+let normalized = 0
 for (const file of collect(distDir)) {
   const { importExt, probeExt } = extsFor(file)
   const src = readFileSync(file, 'utf-8')
-  // 匹配 import/export ... from '...'、import('...')，仅相对路径
-  const re = /(\bfrom\s*|\bimport\s*\(\s*)(['"])(\.\.?\/[^'"]*)\2/g
+  // 匹配 import/export ... from '...'、import('...') 的任意说明符
+  // （含裸包名与绝对路径，以便识别自引用）
+  const re = /(\bfrom\s*|\bimport\s*\(\s*)(['"])([^'"]+)\2/g
   let changed = false
   const next = src.replace(re, (m, kw, q, spec) => {
-    const resolved = resolveSpec(file, spec, importExt, probeExt)
-    if (resolved !== spec) changed = true
-    return `${kw}${q}${resolved}${q}`
+    let s = spec
+    // 1) 自引用说明符 → 改回 dist 内相对路径（dist 布局镜像子路径）
+    const sub = selfRefSub(s)
+    if (sub !== null) {
+      const targetAbs = resolve(distDir, sub === '' ? 'index' : sub)
+      let rel = relative(dirname(file), targetAbs).replace(/\\/g, '/')
+      if (!rel.startsWith('.')) rel = './' + rel
+      s = rel
+      normalized++
+    }
+    // 2) 相对说明符 → 补全扩展名（第三方裸包如 vue 保持不变）
+    if (s.startsWith('.')) s = resolveSpec(file, s, importExt, probeExt)
+    if (s !== spec) changed = true
+    return `${kw}${q}${s}${q}`
   })
   if (changed) {
     writeFileSync(file, next)
@@ -73,6 +115,9 @@ for (const file of collect(distDir)) {
 }
 
 console.log(`✅ 补全相对引用扩展名：处理 ${patched} 个文件`)
+if (normalized > 0) {
+  console.log(`🔧 修正包自引用说明符（改回相对路径）：${normalized} 处`)
+}
 
 // ── 第二遍：删除「运行时为空」的 .js ───────────────────────────────
 // transpile-only 下，纯类型源文件（types.ts / interface.ts 等）擦除后只剩
